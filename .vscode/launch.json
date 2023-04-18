@@ -5,52 +5,78 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Process BRUVS",
+            "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "${file} ",
+            "program": "${file}",
             "console": "integratedTerminal",
-            "args": [
-                "--config 'T:/drone/config.yaml'"
-            ],
-            "windows": {
-                "args": [
-                    "config=Y:\\deepreefs\\DR2021_02\\field_data\\LRUVS\\config.yaml"
-                ]
-            }
+            "justMyCode": true
         },
         {
-            "name": "Process cal",
+            "name": "Process Drone",
             "type": "python",
             "request": "launch",
-            "program": "${file} ",
+            "program": "${file}",
             "console": "integratedTerminal",
+            "justMyCode": true,
             "args": [
-                "--config 'T:/drone/config.yaml'"
-            ],
-            "windows": {
-                "args": [
-                    "config=Y:\\deepreefs\\DR2021_02\\LRUVS_calibration\\config.yaml"
-                ]
-            }
+                "config=/media/card/ROV_DISK/ibenthos_indonesia_2022_09/data_raw/dji_p4rtk/cards/config.yaml"
+            ]
         },
         {
-            "name": "Process field",
+            "name": "Process BRUVs",
             "type": "python",
             "request": "launch",
-            "program": "${file} ",
+            "program": "${file}",
             "console": "integratedTerminal",
+            "justMyCode": true,
             "args": [
-                "--config 'T:/drone/config.yaml'"
-            ],
-            "windows": {
-                "args": [
-                    "config=C:\\fielddata\\fieldtrip1\\DR_20220218\\field_data\\LRUVS\\config.yaml"
-                ]
-            }
+                "config=/media/card/Gulper_2/DI202201/BRUV/DI202201_BRUVops/config.yaml"
+            ]
+        },
+        {
+            "name": "Process Deep BRUVs",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "config=/media/card/ASHMORE_02/BRUVS/config.yaml"
+            ]
+        },
+        {
+            "name": "Process Deep Science BRUVs",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "config=/mnt/science/science/DATA/BRUVS/config.yaml"
+            ]
+        },
+        {
+            "name": "Process Cards",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "config=/mnt/data/fielddata/DR2023-01/fielddata/BRUVS/config.yaml"
+            ]
+        },
+        {
+            "name": "Process Cards last",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "config=/media/card/aaf77658-5054-418b-b376-d7c3897f1f0d/data/DR2023-01/fielddata/BRUVS/config.yaml"
+            ]
         }
-        
     ]
-
-    
 }
