@@ -73,7 +73,7 @@ def task_rsync_cards_remove():
             if len(processes) >= max_processes:
                 os.wait()
             processes.difference_update([p for p in processes if p.poll() is not None])
-        for p in processes:
+        for p in processes:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
             if p.poll() is None:
                 p.wait()
 
