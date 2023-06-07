@@ -12,10 +12,15 @@ import shutil
 import config
 import subprocess
 import json
-import dask
-import dask.dataframe as dd
 import shlex
 import ast
+from io import StringIO
+
+destinations = ['/media/mor582/FBackup1/DR2023-02/fieddata/BRUVS/',
+                '/media/mor582/FBackup2/DR2023-02/fielddata/BRUVS/',
+                '/media/mor582/FieldTrip2/DR2023-02/fielddata/BRUVS/',
+                '/media/mor582/FieldTrip4/DR2023-02/fielddata/BRUVS/',
+                ]
 
 def rsync(sources,dest,move=False):
     output = []
@@ -49,18 +54,27 @@ def task_scan_serialnumbers():
                 command = f"exiftool -api largefilesupport=1 -u  -json -ext MP4 -q -CameraSerialNumber -CreateDate -SourceFile -Duration -FileSize -FieldOfView {item}"
                 process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 out, err = process.communicate()
-                df =pd.read_json(out)
+                s=str(out,'utf-8')
+                data = StringIO(s)  
+                df =pd.read_json(data)
                 cameras.append(df)
         cameras = pd.concat(cameras)
         cameras['CreateDate'] = pd.to_datetime(cameras['CreateDate'],format='%Y:%m:%d %H:%M:%S')
         cameras =cameras.merge(barnumbers, on='CameraSerialNumber', how='inner')
         cameras['mountpoint'] = cameras.SourceFile.str.extract(r'(?P<mount>.*)\/DCIM')
         cameras =cameras.merge(mountpoints, on='mountpoint', how='inner')
-        path = f"{config.geturl('cardstore')}/{backupsessions.iloc[-1].name:%Y%m%dT%H%M%S}"
-        os.makedirs(path,exist_ok=True)
-        cameras['Destination']=cameras.apply(lambda x: f"{path}/{x.CameraNumber}_{x.CameraSerialNumber}_{x.CreateDate:%Y%m%dT%H%M}",axis=1)
+        hosts =cameras.host.unique()
+        cameras['Destination'] =''
+        for i in range(0,len(hosts)):
+            #path = f'{destinations[i%4]}/raw/{backupsessions.iloc[-1].name:%Y%m%dT%H%M%S}'
+            path = f"{config.geturl('cardstore')}/{backupsessions.iloc[-1].name:%Y%m%dT%H%M%S}"
+            os.makedirs(path,exist_ok=True)
+            cameras.loc[cameras.host==hosts[i],'path'] = path
+        cameras['Destination']=cameras.apply(lambda x: f"{x.path}/{x.CameraNumber}_{x.CameraSerialNumber}_{x.CreateDate:%Y%m%dT%H%M}",axis=1)
+        #path = f"{config.geturl('cardstore')}/{backupsessions.iloc[-1].name:%Y%m%dT%H%M%S}"
         cameras.to_csv(targets[0],index=False)
-
+        if cameras.mountpoint.apply(os.path.basename).apply(len).max()>9:
+            print('WARNING duplicate card numbers!')
 
 
     gopro = glob.glob('/media/*/*/DCIM/100GOPRO')

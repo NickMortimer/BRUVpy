@@ -64,7 +64,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "config=/mnt/data/fielddata/DR2023-01/fielddata/BRUVS/config.yaml"
+                "config=/mnt/fieldraid/fielddata/DR2023-01/fielddata/BRUVS/config.yaml"
             ]
         },
         {
@@ -75,8 +75,32 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "config=/media/card/aaf77658-5054-418b-b376-d7c3897f1f0d/data/DR2023-01/fielddata/BRUVS/config.yaml"
+                "config=/media/mor582/ebdb0ec6-e848-409f-ab1b-8bca33dd43d7/data/DR2023-02/fielddata/BRUVS/config.yaml"
+            ]
+        },
+        {
+            "name": "Process Cilibration",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "config=/media/mor582/ebdb0ec6-e848-409f-ab1b-8bca33dd43d7/data/DR2023-02/calibration/BRUVS/config.yaml"
+            ]
+        },
+        {
+            "name": "Process Video",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args": [
+                "config=/media/Video/DR2023-01/fielddata/BRUVS/config.yaml"
             ]
         }
+
+        
     ]
 }
