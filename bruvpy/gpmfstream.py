@@ -17,9 +17,16 @@ GPSData = namedtuple("GPSData",
                          "speed_2d",
                          "speed_3d",
                          "units",
+                         "npoints",
+                         "stmp"
+                     ])
+DataBlock = namedtuple("Data",
+                     [
+                         "description",
+                         "stmp",
+                         "data",
                          "npoints"
                      ])
-
 
 def extract_blocks(stream,tag):
     """ Extract GPS data blocks from binary stream
@@ -50,7 +57,12 @@ def extract_blocks(stream,tag):
         if keep:
             yield {key:content}
 
+def parse_block(block):
+    if 'GPS5' in block.keys():
+        return(parse_gps_block(block['GPS5']))
+    return(parse_si_block(block))
 
+    
 def parse_gps_block(gps_block):
     """Turn GPS data blocks into `GPSData` objects
 
@@ -72,7 +84,7 @@ def parse_gps_block(gps_block):
 
     latitude, longitude, altitude, speed_2d, speed_3d = gps_data.T
 
-    return GPSData(
+    return {'GPS5':GPSData(
         description=block_dict["STNM"].value,
         timestamp=block_dict["GPSU"].value,
         precision=block_dict["GPSP"].value / 100.,
@@ -83,11 +95,21 @@ def parse_gps_block(gps_block):
         speed_2d=speed_2d,
         speed_3d=speed_3d,
         units=block_dict["UNIT"].value,
+        stmp = block_dict['STMP'].value,
         npoints=len(gps_data)
-    )
+    )}
 
 
-def parse_acc_block(acc_block,):
+
+
+FIX_TYPE = {
+    0: "none",
+    2: "2d",
+    3: "3d"
+}
+
+
+def parse_si_block(block):
     """Turn GPS data blocks into `GPSData` objects
 
     Parameters
@@ -100,34 +122,23 @@ def parse_acc_block(acc_block,):
     gps_data: GPSData
         A GPSData object holding the GPS information of a block.
     """
+    key = list(block.keys())[0]
     block_dict = {
-        s.key: s for s in acc_block
+        s.key: s for s in block[key]
     }
-
-    gps_data = block_dict["GPS5"].value * 1.0 / block_dict["SCAL"].value
-
-    latitude, longitude, altitude, speed_2d, speed_3d = gps_data.T
-
-    return GPSData(
-        description=block_dict["STNM"].value,
-        timestamp=block_dict["GPSU"].value,
-        precision=block_dict["GPSP"].value / 100.,
-        fix=block_dict["GPSF"].value,
-        latitude=latitude,
-        longitude=longitude,
-        altitude=altitude,
-        speed_2d=speed_2d,
-        speed_3d=speed_3d,
-        units=block_dict["UNIT"].value,
-        npoints=len(gps_data)
-    )
+    if 'SCAL' in block_dict.keys():
+        data = block_dict[key].value * 1.0 / block_dict["SCAL"].value
+    else :
+        data = block_dict[key]
+    return {key:DataBlock(
+        description =block_dict["STNM"].value,
+        data = data,
+        stmp = block_dict['STMP'].value,
+        npoints=len(data)
+    )}
 
 
-FIX_TYPE = {
-    0: "none",
-    2: "2d",
-    3: "3d"
-}
+
 
 
 def _make_speed_extensions(gps_data, i):

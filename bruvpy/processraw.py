@@ -16,9 +16,8 @@ import shlex
 import ast
 from io import StringIO
 from gpmfio import extract_gpmf_stream
-from gpmfstream import parse_gps_block
-from gpmfstream import parse_acc_block
-import parse
+from gpmfstream import parse_block
+from gpmfstream import extract_blocks
 import numpy as np
 
 
@@ -47,11 +46,27 @@ def task_create_json():
         def parsefile(dependencies, targets):
             with open(dependencies[0], 'rb') as file:
                 stream =file.read()
-                gps_blocks = extract_gps_blocks(stream,'GPS5')  
-                gps_data = list(map(parse_gps_block, gps_blocks))
+                keys=['GPS5','ACCL','MWET','CORI']
+                gps_blocks = extract_blocks(stream,keys)  
+                blocks = {
+                    s: [] for s in keys
+                }
+                gps_data = list(map(parse_block, gps_blocks))
+                for item in gps_data:
+                     key =list(item.keys())[0]
+                     blocks[key].append(item[key]._asdict())
+                gps = pd.DataFrame(blocks['GPS5']).explode(['latitude','longitude','altitude','speed_2d','speed_3d'])
+                gps.loc[gps.assign(d=gps.stmp).duplicated('stmp'), ['timestamp','stmp']] = np.nan
+                gps.timestamp=pd.to_numeric(pd.to_datetime(gps.timestamp))
+                gps.loc[gps.timestamp<0,'timestamp']=np.nan
+                gps = gps.interpolate()
+                gps.timestamp=pd.to_datetime(gps.timestamp)
+                cori=pd.DataFrame(blocks['CORI']).explode('data')
+                cori.loc[gps.assign(d=cori.stmp).duplicated('stmp'), 'stmp'] = np.nan
+                cori=pd.DataFrame(blocks['CORI']).explode('data')
                 gps_dict = [block._asdict() for block in gps_data]
-                acc_blocks = extract_gps_blocks(stream,'ACCL')  
-                acc_data = list(map(parse_acc_block, acc_blocks)) 
+                acc_blocks = extract_blocks(stream,'ACCL')  
+                #acc_data = list(map(parse_acc_block, acc_blocks)) 
                 # Create DataFrame from the list of dictionaries
                 df = pd.DataFrame(gps_dict)
                 df.latitude =df.latitude.apply(np.mean)
@@ -60,7 +75,7 @@ def task_create_json():
                 pass
 
 
-        file_dep = glob.glob(f"{config.geturl('videosource')}**/100GOPRO/*.bin",recursive=True)
+        file_dep = glob.glob(f"{config.geturl('videosource')}/**/100GOPRO/GX01*.bin",recursive=True)
         for file in file_dep:
             target = file.replace('bin','nc')
             yield { 
